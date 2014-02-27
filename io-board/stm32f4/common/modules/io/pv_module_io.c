@@ -98,16 +98,15 @@ void module_io_run() {
 	float accRaw[3], gyrRaw[3], magRaw[3];
 	char  ax[16], ay[16], az[16], r[16], p[16];
 	float rpy[] = {0,0,0};
+	char str[64];
 
 	while(1) {
 		lastWakeTime = xTaskGetTickCount();
 
 		xQueueReceive(pv_interface_io.iActuation, &iActuation, 0);
 
-		//c_io_blctrl_setSpeed(0, 700);//1700-iActuation.escLeftSpeed);
-//		c_io_blctrl_setSpeed(1, 700);//1700-iActuation.escLeftSpeed);
-
-		//vTaskDelay( 10 / portTICK_RATE_MS );
+		c_io_blctrl_setSpeed(0, 700);//1700-iActuation.escLeftSpeed);
+		c_io_blctrl_setSpeed(1, 700);//1700-iActuation.escLeftSpeed);
 
 		//c_io_imu_getRaw(accRaw, gyrRaw, magRaw);
 
