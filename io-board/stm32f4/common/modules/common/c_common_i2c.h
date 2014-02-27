@@ -28,18 +28,18 @@
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
-void c_common_i2c_init();
-void c_common_i2c_start(uint8_t address, uint8_t direction);
-void c_common_i2c_write(uint8_t data);
-void c_common_i2c_stop();
+void c_common_i2c_init(I2C_TypeDef* I2Cx);
+void c_common_i2c_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction);
+void c_common_i2c_write(I2C_TypeDef* I2Cx, uint8_t data);
+void c_common_i2c_stop(I2C_TypeDef* I2Cx);
 
-void c_common_i2c_writeBit(uint8_t device, uint8_t address, uint8_t bit, bool value);
+void c_common_i2c_writeBit(I2C_TypeDef* I2Cx, uint8_t device, uint8_t address, uint8_t bit, bool value);
 
-uint8_t c_common_i2c_readAck();
-uint8_t c_common_i2c_readNack();
+uint8_t c_common_i2c_readAck(I2C_TypeDef* I2Cx);
+uint8_t c_common_i2c_readNack(I2C_TypeDef* I2Cx);
 
-void c_common_i2c_readBytes(uint8_t device, uint8_t address, char bytesToRead, uint8_t * recvBuffer);
-void c_common_i2c_writeByte(uint8_t device, uint8_t address, uint8_t byteToWrite);
+void c_common_i2c_readBytes(I2C_TypeDef* I2Cx, uint8_t device, uint8_t address, char bytesToRead, uint8_t * recvBuffer);
+void c_common_i2c_writeByte(I2C_TypeDef* I2Cx, uint8_t device, uint8_t address, uint8_t byteToWrite);
 
 /* Header-defined wrapper functions ----------------------------------------- */
 

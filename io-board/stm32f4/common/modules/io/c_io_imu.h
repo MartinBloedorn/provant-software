@@ -37,11 +37,11 @@
 #define PV_IMU_Z           2
 
 /* Exported macro ------------------------------------------------------------*/
-//#define C_IO_IMU_USE_ITG_ADXL_HMC
-#define C_IO_IMU_USE_MPU6050_HMC5883
+#define C_IO_IMU_USE_ITG_ADXL_HMC
+//#define C_IO_IMU_USE_MPU6050_HMC5883
 
 /* Exported functions ------------------------------------------------------- */
-void c_io_imu_init();
+void c_io_imu_init(I2C_TypeDef* I2Cx);
 void c_io_imu_getRaw(float  * accRaw, float * gyrRaw, float * magRaw);
 void c_io_imu_getComplimentaryRPY(float * rpy);
 void c_io_imu_calibrate();

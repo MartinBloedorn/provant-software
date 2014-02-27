@@ -77,6 +77,7 @@ void module_rc_run() {
 	while(1) {
 		lastWakeTime = xTaskGetTickCount();
 
+    /*
 		oActuation.escLeftSpeed = c_rc_receiver_getChannel(C_RC_CHANNEL_THROTTLE);
 		oActuation.servoLeft    = c_rc_receiver_getChannel(C_RC_CHANNEL_ROLL);
 		oActuation.servoRight   = c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
@@ -86,8 +87,9 @@ void module_rc_run() {
 
 		if(pv_interface_rc.oActuation != 0)
 			xQueueOverwrite(pv_interface_rc.oActuation, &oActuation);
+    */
 
-        vTaskDelayUntil( &lastWakeTime, MODULE_PERIOD / portTICK_RATE_MS);
+    vTaskDelayUntil( &lastWakeTime, MODULE_PERIOD / portTICK_RATE_MS);
 	}
 }
 /* IRQ handlers ------------------------------------------------------------- */
