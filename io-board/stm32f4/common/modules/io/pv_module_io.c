@@ -98,7 +98,7 @@ void module_io_init() {
 void module_io_run() 
 {
 	float accRaw[3], gyrRaw[3], magRaw[3];
-	char  ax[16], ay[16], az[16], r[16], p[16],y[16];
+	char  ax[16], ay[16], az[16], r[16], p[16], y[16], z[16];
 	float rpy[] = {0,0,0};
 	char str[64];
 
@@ -116,29 +116,44 @@ void module_io_run()
 		//c_common_utils_floatToString(accRaw[0], ax, 4);
 		//c_common_utils_floatToString(accRaw[1], ay, 4);
 		//c_common_utils_floatToString(accRaw[2], az, 4);
+		//c_io_blctrl_setSpeed(0, 700);//1700-iActuation.escLeftSpeed);
+		//c_io_blctrl_setSpeed(1, 700);//1700-iActuation.escLeftSpeed);
+
+		taskENTER_CRITICAL();
 
 		c_io_imu_getComplimentaryRPY(rpy);
-		c_common_utils_floatToString(RAD_TO_DEG*rpy[PV_IMU_ROLL ], r, 4);
-		c_common_utils_floatToString(RAD_TO_DEG*rpy[PV_IMU_PITCH], p, 4);
-		c_common_utils_floatToString(RAD_TO_DEG*rpy[PV_IMU_YAW  ], y, 4);
-
-		sprintf(str, "imu -> \t %s \t\t %s \t\t %s\n\r", r, p,y);
+		c_common_utils_floatToString(rpy[PV_IMU_ROLL ]*RAD_TO_DEG, ax, 4);
+		c_common_utils_floatToString(rpy[PV_IMU_PITCH]*RAD_TO_DEG, ay, 4);
+		c_common_utils_floatToString(rpy[PV_IMU_YAW  ]*RAD_TO_DEG, az, 4);
+		taskEXIT_CRITICAL();
+		sprintf(str, "imu -> \t %s \t\t %s \t\t %s\n\r", ax, ay, az);
 		c_common_usart_puts(USART2, str);
 
-		vTaskDelay(2/portTICK_RATE_MS);
-		c_io_blctrl_updateBuffer(0);
-		sprintf(str, "blctrl -> \t %d \n\r",c_io_blctrl_readVoltage(0) );
-		c_common_usart_puts(USART2, str);
+		c_common_utils_floatToString(iActuation.servoRight*RAD_TO_DEG, r, 4);
+		c_common_utils_floatToString(iActuation.servoLeft*RAD_TO_DEG, p, 4);
+		c_common_utils_floatToString(iActuation.escRightSpeed, y, 4);
+		c_common_utils_floatToString(iActuation.escLeftSpeed, z, 4);
+		//sprintf(str, "control -> (%s,%s) \t %s \t %s \t %s \t %s \n\r",ax,ay, r,p,y,z);
+		//c_common_usart_puts(USART2, str);
+
+
+		oAttitude.roll=rpy[PV_IMU_ROLL ];
+		oAttitude.pitch=rpy[PV_IMU_ROLL ];
 
 		//if(iActuation.servoLeft > 60) iActuation.servoLeft = 60.0;
 		//if(iActuation.servoLeft < 0)  iActuation.servoLeft =  0.0;
 		//if(iActuation.servoRight > 60) iActuation.servoRight = 60.0;
 		//if(iActuation.servoRight < 0)  iActuation.servoRight =  0.0;
+		taskENTER_CRITICAL();
+		c_io_rx24f_move(2, 150-rpy[PV_IMU_ROLL]*RAD_TO_DEG);
+		c_io_rx24f_move(1, 130+rpy[PV_IMU_ROLL]*RAD_TO_DEG);	
+		taskEXIT_CRITICAL();
 
-		//c_io_rx24f_move(2, iActuation.servoLeft);
-		//c_io_rx24f_move(1, iActuation.servoRight-10);				
+		if(pv_interface_io.oAttitude != 0)
+      		xQueueOverwrite(pv_interface_io.oAttitude, &oAttitude);
 
 		vTaskDelayUntil( &lastWakeTime, (MODULE_PERIOD / portTICK_RATE_MS));
+		
 	}
 }
 /* IRQ handlers ------------------------------------------------------------- */
