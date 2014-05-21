@@ -1,6 +1,8 @@
 /*! \mainpage Página principal
 
-\image html provant_small.png "proVANT - Remote Controlled Flight v0.1" width=6cm 
+\image html provant_small.png "proVANT - Remote Controlled Flight v0.3" width=6cm 
+
+\section page_main_sec_overview Overview
 
 Este é a documentacão do projeto de software <b>Remote Controlled Flight</b> do \b proVANT.
 O objetivo deste projeto de software é gerar um firmware para a \em io-board do VANT que permita operá-lo com um controle remoto convencional de
@@ -11,7 +13,20 @@ aeromodelismo. Para tal, são necessárias/previstas o seguinte conjunto de fina
 + Leitura e tratamento simplificado de dados de uma IMU (a ser escolhida).
 + Algoritmo de controle garantindo estabilidade rotacional para o VANT durante o vôo. 
 
-<b>Status da versão 0.1:</b> 
+\section page_main_sec_changelog Changelog
+
+<b>Changelog da versão 0.3  [Apr-2013] :</b> 
++ ...
++ ...
+
+
+<b>Changelog da versão 0.2 [Fev-2014 > Mar-2014] :</b> 
++ Resolvidas as pendências da versão 0.1. 
++ Implementada a troca de mensagens entre módulos (em threadas).
++ Atuação: Implementado os drivers para o servo RX24f e o ESC da Mikrokopter
++ Sensoriamento: 
+
+<b>Status da versão 0.1 [Nov-2013 > Jan-2014] :</b> 
 + Implementado o esqueleto básico da estrutura do projeto (sistema de <b>modules</b> com um <i>main</i> e um <i>common</i>)
 + Adotada uma convenção de nomenclatura, descrita em \ref page_naming )
 + Implementadas as funções básicas para:
@@ -26,7 +41,7 @@ aeromodelismo. Para tal, são necessárias/previstas o seguinte conjunto de fina
 + Integração e teste com <a href="http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml">FreeRTOS+Trace</a> e Tracealyzer, 
 ver \ref page_freertosplustrace .
 	
-<b>Pendências:</b>
+<b>Pendências da versão 0.1:</b>
 + Atualizar a documentação (decritivo da estrutura de projeto, em \ref page_naming )
 + Implementar troca de mensagens entre threads. 
 
@@ -43,14 +58,50 @@ Para pendências internas no código, ver lista de tarefas auto-gerada (\ref tod
 
 \section page_naming_sec_codeorganization Organização deste projeto
 
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. 
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero 
-eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. 
-Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. 
-Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem. Investigationes demonstraverunt lectores legere me 
-lius quod ii legunt saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, 
-quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima. 
+Este projeto tenta seguir os princípios de organização apresentados em 
+<em> <a href="http://www.amazon.com/Large-Scale-Software-Design-John-Lakos/dp/0201633620">Large-Scale C++ Software Design</a></em>, de John Lakos. 
+Para tal, tentou-se implementar uma estrutura hierárquica verticalizada dos elementos de um nível em relação aos de um nível superior. Para a descrição deste projeto, 
+faz-se necessário apresentar convenções de nomenclatura usadas pelo autor, adaptadas ao contexto desta aplicação. São elas:
+
+<center>
+Nomenclatura  | Uso em contexto 
+------------- | -------------
+Arquivo       | Unidade atômica do projeto; conjuntos de dados com extensões (<em>.c, .cpp, .h, etc </em>), ou binários sem extensão. 
+Componente    | Par de arquivos; <em> header + source file </em> respectivos. Exemplo, `c_io_imu.c` e `c_io_imu.h`. Pode ser referido como \b submódulo. 
+Módulo        | Conjunto de componentes implementando alguma unidade funcional. Exemplo, a coleção de arquivos em <em> modules/io </em>, que implementa as funções de E/S do VANT.
+Subsistema	  | Conjunto de módulo + documentação do módulo + unidades de teste do módulo. 
+Sistema       | Conjunto de subsistemas + documentação + aplicação que implementam a funcionalidade total do VANT. 
+</center> 
+
+Neste projeto, a \b aplicação - o  binário a ser efetivamente executado pelo VANT -, se encontra a nível de \b sistema. O uso de documentação independente para os \b subsistemas não é 
+necessária no escopo deste projeto, e portanto, toda a documentação dos \b módulos é gerada <em>juntamente com esta documentação</em> de \b sistema. Durante o uso deste documento, quando estes 
+termos aparecerem com os significados da tabela acima, eles serão marcados em \b negrito. 
+
+Seguindo um conceito de verticalização, os elementos do projeto estão organizados como no diagrama abaixo:
+
+\image html provant_software_layers_diagram.png "Overview da organização de software do projeto de software \em Remote \em Controlled \em Flight." width=6cm
+
+Identificam-se três níveis principais e seus elementos, do topo à base: 
+
+- <b> Application level </b>
+	+ \em Modules: Módulos, implementando as funções de interesse do VANT (estabilização, navegação, comunicação com \em main-board, etc). O binário da \b aplicação é compilado diretamente 
+	acima deste nível.
+- <b> Middleware level </b>
+	+ \em Libs: Bibliotecas próprias ou de terceiros. Funções utilitárias próprias do projeto (a exemplo dos componente `c_common_utils.h` e `c_common_utils.c`) 
+	além de bibliotecas como o Tracealyzer estão neste nível.
+	+ \em HAL: Hardware Abstraction Layer.  
+	+ \em State-Machine:
+	+ \em Free-RTOS: 
+- <b> Core level </b>
+	+ \em CMSIS \em Core:
+	+ \em CMSIS \em Vendor:				
+
+É importante lembrar que um elemento em um nível pode depender direta ou indiretamente de todos os elementos abaixo dele, sem que os princípios de 
+modularidade ou hierarquia vertical sejam violados. No entanto, relações diretas - de um elemento apenas com aqueles diretamente abaixo dele - são recomendadas.
+
+\subsection page_naming_subsec_foldertree Estrutura de pastas
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis adnum,
 
 \section page_naming_sec_naming Nomenclatura
 
@@ -150,6 +201,8 @@ long map(long x, long in_min, long in_max, long out_min, long out_max) {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 } 
 \endcode
+
+Por fim, a utilização de pinos da MCU deve ser definida no arquivo `pv_pinmapping.h`, seguindo as regras de nomenclatura definidas em \link PV_PinMapping PinMapping \endlink .
 
 \section page_naming_sec_doxygen Doxygen
  
