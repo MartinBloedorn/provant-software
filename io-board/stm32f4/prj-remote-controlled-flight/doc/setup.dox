@@ -1,0 +1,103 @@
+
+/*! \page page_setup Setup: OpenOCD e Toolchain
+
+\section page_setup_sec_introduction Introdução
+
+Esse documento tem como objetivo fornecer os passos necessários para o setup do OpenOCD e do Toolchain de compilacão para targets ARM (em especial, para a série Cortex-M3/M4). O \b OpenOCD é o programa que permite ao PC programar, gravar, apagar, etc., o ARM. Já o \b Toolchain é o kit compilador+linker usado para gerar o executável para o ARM a partir dos códigos fonte.
+
+Observações:
++	Os comandos nesta seção são previstos para Linux, e foram testados nas distribuições Ubuntu e Linux Mint. Podem existir variações entre distros. 
++ 	O projeto prevê o uso de um ARM Cortex-M4, especificamente a STM32F407. Alguns comandos deste documento serão específicos para este target. 
++	O projeto prevê também o uso de dois tipos de adaptador JTAG: o <a href="http://dangerousprototypes.com/docs/Bus_Blaster">Busblaster</a>, e o TI ICDI, embutido na placa <a href="http://www.st.com/stm32f4-discovery">STM32F4-Discovery</a> utilizada. Novamente, alguns comandos deste tutorial são específicos para estes dispositivos.
+
+\subsection page_setup_sec_introduction_subsec_ton Tabela de Nomenclatura
+
+Ao longo deste documento, alguns termos serão usados com significado bastante específico. Quanto este for o caso, estes termos estarão em \b negrito, e seu significado será o listado na tabela abaixo. 
+
+<center>
+Nomenclatura  | Uso em contexto 
+------------- | -------------
+Adaptador JTAG| Placa JTAG/USB: o adaptador \a BusBlaster é o default do projeto.
+ARM           | Um \b target. No contexto deste documento, é o processador STM32F407. 
+Target        | Processador sendo manipulado (programado, debugado, etc.).
+</center> 
+
+\section page_setup_sec_environmentsetup Setup do Ambiente 
+
+\subsection page_setup_sec_environmentsetup Instalação do OpenOCD
+
+O OpenOCD (Open on-chip Debugger, [2])  é uma ferramenta para debug, gravaçãoao e inspeção de processadores (targets) através de uma ferramenta de interface (JTAG, ISP, etc). Ele será usado para upload e debug da placa, primeiramente pelo terminal, e depois diretamente da IDE Eclipse.
+
+1. Instalando as bibliotecas necessárias para compilação; num terminal, digite:
+\code 
+$ sudo apt-get install build-essentials libusb-dev libftdi-dev git
+\endcode
+
+2. Para obter a versão mais recente do OpenOCD, clonaremos o repositório. Para tal, no terminal, entre: 
+\code 
+$ git clone git://repo.or.cz/openocd.git
+\endcode
+
+3. Entre na pasta clonada e execute o comando <em> ./boostrap </em>.	
+\code 
+$ cd openocd && ./boostrap
+\endcode
+
+4. Os módulos a serem compilados no OpenOCD podem ser escolhidos durante a execucução do <em>./configure</em>. Para configurar os módulos de acordo com o defindo na \ref page_setup_sec_introduction , execute: 
+\code 
+$ ./configure --disable-werror --enable-legacy-ft2232_libftdi --enable-buspirate --enable-jlink --enable-stlink --enable-ti-icdi --enable-usb_blaster_libftdi --enable-ulink
+\endcode
+É possível que um warning seja emitindo, pois estamos usando uma versão antiga do driver FTDI:
+\code
+configure: WARNING: Building the deprecated 'ft2232' adapter driver.
+\endcode
+Este pode ser ignorado sem problemas.
+
+5. Compile o código e instale a aplicação. Execute: 
+\code
+$ make && sudo make install
+\endcode
+
+Se os passos acima foram realizados sem erros, o comando <em>openocd</em> está disponível em todo o sistema. Pode-se verificar no terminal;
+
+\code
+$ openocd -h 
+
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.sourceforge.net/doc/doxygen/bugs.html
+Open On-Chip Debugger
+Licensed under GNU GPL v2
+--help       | -h	display this help
+--version    | -v	display OpenOCD version
+--file       | -f	use configuration file <name>
+--search     | -s	dir to search for config files and scripts
+--debug      | -d	set debug level <0-3>
+--log_output | -l	redirect log output to file <name>
+--command    | -c	run <command>
+\endcode
+
+\subsection page_setup_sec_launchopenocd Lançando o OpenOCD e conectando à placa
+
+Os comandos do OpenOCD costumam assumir a forma:
+\code
+$ openocd -f [script de interface] -f [script de target]
+\endcode
+
+Assumiremos que o OpenOCD foi instalado no diretório default: <em> /usr/local/shared/openocd </em> 
+
+<b> Instruções para a placa STM32F4 H407 </b>
+
+1. Conecte a placa à uma fonte de alimentação (6 ou 16V), ou à uma porta USB (dependendo da configuração do jumper \a PWR_SEL).
+2. Conecte o <b>adaptador JTAG</b> à porta USB. 
+3. Conecte a placa ao adaptador através de um cabo flat de 20 vias. 
+4. Num terminal, entre:
+\code
+openocd -f /usr/local/share/openocd/scripts/interface/busblaster.cfg -f /usr/local/share/openocd/scripts/target/stm32f4x.cfg
+\endcode
+
+<b> Instruções para a placa STM32F4 H407 </b>
+
+dolor sit amet
+
+*/

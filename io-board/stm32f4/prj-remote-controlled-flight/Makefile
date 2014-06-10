@@ -127,7 +127,7 @@ all: directories lib proj
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 doc:
-	cd $(PRJDIR)/doc && $(DOXYGEN)
+	cd $(PRJDIR)/doc && $(DOXYGEN) Doxyfile
 	cd ..
 
 directories:
