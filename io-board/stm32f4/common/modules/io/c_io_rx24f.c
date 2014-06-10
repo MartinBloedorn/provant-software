@@ -169,7 +169,7 @@ void c_io_rx24f_init(int baudrate) {
   * @retval Status.
   */
 int c_io_rx24f_move(unsigned char ID, int position) {
-	int hexPosition = round(c_common_utils_map(position,0,300,0,1023));
+	  int hexPosition = round(c_common_utils_map(position,0,300,0,1023));
     unsigned char Position_H, Position_L;
     Position_H = hexPosition >> 8;
     Position_L = 0x00FF & hexPosition;
@@ -288,6 +288,69 @@ int c_io_rx24f_setLed(unsigned char ID, unsigned char value) {
     else 
       return STARTX_ERROR;
   }
+
+/** \brief Modifica o valor de um endereco da memoria.
+  * Retorna \b 1 em caso de sucesso.
+  *
+  * @param  ID ID do servo.
+  * @param  endereco.
+  * @param  valor.
+  * @retval Status.
+  */
+int c_io_rx24f_write(unsigned char ID, unsigned char address,unsigned char value) 
+{
+    unsigned int TChecksum = (ID +
+                             AX_LED_LENGTH +
+                             AX_WRITE_DATA +
+                             address +
+                             value);
+    while ( TChecksum >= 255){
+    TChecksum -= 255;
+    }
+
+    unsigned char checksum = 0xFF - TChecksum;
+
+    c_common_gpio_set(controlPin);
+    for(int i=0xFFFF; i>0; i--);
+    c_common_usart_putchar(RXUSART, AX_START);
+    c_common_usart_putchar(RXUSART, AX_START);
+    c_common_usart_putchar(RXUSART, ID);
+    c_common_usart_putchar(RXUSART, AX_LED_LENGTH);
+    c_common_usart_putchar(RXUSART, AX_WRITE_DATA);
+    c_common_usart_putchar(RXUSART, address);
+    c_common_usart_putchar(RXUSART, value);
+    c_common_usart_putchar(RXUSART, checksum);
+    while( !(RXUSART->SR & 0x00000040) );
+    c_common_gpio_reset(controlPin);
+
+    //int volatile pass_time = (int)CORE_GetSysTick();
+    //while((int)CORE_GetSysTick()-pass_time<=1){}
+    //c_common_utils_delayms(1);
+    int buffer[12]={}; 
+
+    for (int i = 0; c_common_usart_available(RXUSART)==1 && i<12; ++i)
+    {
+      buffer[i]=(int)c_common_usart_read(RXUSART);
+    }
+
+    if(buffer[4]!=0)
+      return prv_read_error(buffer[4]);    
+
+    if(buffer[0]==0XFF && buffer[1]==0XFF && buffer[2]==(int)ID)
+    {
+
+      TChecksum=buffer[2]+buffer[3]+buffer[4];
+      while ( TChecksum >= 255) TChecksum -= 255;
+      TChecksum= 0xFF - TChecksum;
+
+      if(buffer[5]==TChecksum)
+        return 0; //ok
+      else
+        return CHECKSUM_ERROR; 
+    }
+    else 
+      return STARTX_ERROR;
+}
 
 
 /** \brief Lê a posição atual do servo, em graus.

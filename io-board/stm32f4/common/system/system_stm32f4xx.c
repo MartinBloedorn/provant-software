@@ -143,12 +143,24 @@
                                    This value must be a multiple of 0x200. */
 
 
-/* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-#define PLL_M      6//8
-#define PLL_N      168//336
+#ifdef STM32F4_DISCOVERY
+  /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
+  #define PLL_M      8
+  #define PLL_N      336
 
-/* SYSCLK = PLL_VCO / PLL_P */
-#define PLL_P      2
+  /* SYSCLK = PLL_VCO / PLL_P */
+  #define PLL_P      2
+#endif
+
+#ifdef STM32F4_H407
+  /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
+  #define PLL_M      6
+  #define PLL_N      168
+
+  /* SYSCLK = PLL_VCO / PLL_P */
+  #define PLL_P      2
+#endif
+
 
 /* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
 #define PLL_Q      7

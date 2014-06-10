@@ -50,27 +50,44 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 
-// PD controller gains
-#define KPPHI    1.0f
-#define KVPHI    1.0f
-#define KPTHETA  1.0f
-#define KVTHETA  1.0f
-#define KPPSI    1.0f
-#define KVPSI    1.0f
-#define KVZ		  1.0f
-#define KPZ		  1.0f
+// PID controller gains
+#if 1
+	#define KPPHI    340.0f
+	#define KVPHI    32.0f
+	#define KIPHI	 1200.0f
+	#define KPTHETA  340.0f
+	#define KVTHETA  32.0f
+	#define KITHETA	 1200.0f
+	#define KPPSI    100.0f
+	#define KVPSI    20.0f
+	#define KIPSI	 0.0f
+	#define KVZ		 5.0f
+	#define KPZ		 30.0f
+#else
+#define KPPHI    100.0f
+	#define KVPHI    20.0f
+	#define KIPHI	 0.0f
+	#define KPTHETA  100.0f
+	#define KVTHETA  20.0f
+	#define KITHETA	 0.0f
+	#define KPPSI    100.0f
+	#define KVPSI    20.0f
+	#define KIPSI	 0.0f
+	#define KVZ		 5.0f
+	#define KPZ		 30.0f
+#endif
 
 // Environment parameters
-#define G    9.81 //gravity
+#define G   9.81 //gravity
 
 // Aircraft parameters
-#define M    1 // mass
-#define L    1 // aircraft's arm length. Y-axis distance between center of rotation(B) and rotor center of mass.
-#define H    1 // center of mass displacement in Z-axis
-// Aircraft's Moments of IneZrtia
-#define IXX  1
-#define IYY  1
-#define IZZ  1
+#define M    1.672   // mass kg
+#define L    0.27023 // aircraft's arm length. Y-axis distance between center of rotation(B) and rotor center of mass.
+#define H    0.03349 // center of mass displacement in Z-axis
+// Aircraft's Moments of Inertia km*m²
+#define IXX  0.01905797115
+#define IYY  0.00502396129
+#define IZZ  0.01859602726
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -81,6 +98,17 @@ float32_t Mq_f32[3][3];
 float32_t Cqq_f32[3][3];
 float32_t Fzb;
 
+/** \brief Integral do erro dos angulos de orientacao VANT.*/
+typedef struct {
+	float roll, pitch, yaw;
+} c_rc_control_error;
+
+// Variáveis criadas para guardar o erro e a integral do erro
+// São globais porque precisamos do erro anterior e integracao anterior
+c_rc_control_error integrated_error={0};
+c_rc_control_error error={0};
+
+
 /* Private function prototypes -----------------------------------------------*/
 float32_t altitude_controller_step(float32_t altitude, float32_t altitude_reference, float32_t rateOfClimb, float32_t rateOfClimb_reference, pv_msg_datapr_attitude attitude);
 arm_matrix_instance_f32 PD_gains_step(pv_msg_datapr_attitude attitude, pv_msg_datapr_attitude attitude_reference);
@@ -88,6 +116,9 @@ arm_matrix_instance_f32 torque_calculation_step(pv_msg_datapr_attitude attitude,
 pv_msg_io_actuation actuators_signals_step(arm_matrix_instance_f32 tau, float32_t Fzb);
 arm_matrix_instance_f32 inertia_matrix(pv_msg_datapr_attitude attitude);
 arm_matrix_instance_f32 coriolis_matrix(pv_msg_datapr_attitude attitude);
+
+float integrateTrapezoidal(float last_integration, float current_value, float last_value, float sample_time);
+void integrateError();
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -101,20 +132,44 @@ float32_t altitude_controller_step(float32_t altitude, float32_t altitude_refere
 	return (M * G + M * Zeta3) / (cos(attitude.roll) * cos(attitude.pitch));
 }
 
+/**\brief Integral numérica utilizando o método trapezoidal (Tustin)
+ *
+ */
+float integrateTrapezoidal(float last_integration, float current_value, float last_value, float sample_time){
+
+	return last_integration + sample_time * (current_value + last_value)/2;
+
+	//integrated_error.roll = integrated_error.roll + SAMPLE_TIME*(error_roll+error.roll);
+}
+
+void integrateError(){
+
+}
+
 
 arm_matrix_instance_f32 PD_gains_step(pv_msg_datapr_attitude attitude, pv_msg_datapr_attitude attitude_reference)
 {
 	arm_matrix_instance_f32 gamma;
 
+	error.roll = attitude.roll - attitude_reference.roll;
+	error.pitch = attitude.pitch - attitude_reference.pitch;
+	error.yaw = attitude.yaw - attitude_reference.yaw;
+
+	// Integra o erro, utiliza as variaveis globais integrated_error e error
+	integrateError();
+
 	//gamma1
 	gamma_f32[0] = -KPPHI * (attitude.roll - attitude_reference.roll)
-						- KVPHI * (attitude.dotRoll - attitude_reference.dotRoll);
+						- KVPHI * (attitude.dotRoll - attitude_reference.dotRoll)
+						- KIPHI * integrated_error.roll;
 	//gamma2
 	gamma_f32[1] = -KPTHETA * (attitude.pitch - attitude_reference.pitch)
-						- KVTHETA * (attitude.dotPitch - attitude_reference.dotPitch);
+						- KVTHETA * (attitude.dotPitch - attitude_reference.dotPitch)
+						- KITHETA * integrated_error.pitch;
 	//gamma3
 	gamma_f32[2] = -KPPSI * (attitude.yaw - attitude_reference.yaw)
-						- KVPSI * (attitude.dotYaw - attitude.dotYaw);
+						- KVPSI * (attitude.dotYaw - attitude.dotYaw)
+						- KIPSI * integrated_error.yaw;
 
 	arm_mat_init_f32(&gamma, 3, 1, (float32_t *)gamma_f32);
 
@@ -135,9 +190,9 @@ arm_matrix_instance_f32 torque_calculation_step(pv_msg_datapr_attitude attitude,
 	arm_mat_init_f32(&r1, 3, 1, (float32_t *)r1_f32);
 	arm_mat_init_f32(&r2, 3, 1, (float32_t *)r2_f32);
 
-	attitudeVector_f32[0]= attitude.roll;
-	attitudeVector_f32[1]= attitude.pitch;
-	attitudeVector_f32[2]= attitude.yaw;
+	attitudeVector_f32[0]= attitude.dotRoll;
+	attitudeVector_f32[1]= attitude.dotPitch;
+	attitudeVector_f32[2]= attitude.dotYaw;
 
 	arm_mat_init_f32(&tau, 3, 1, (float32_t *)tau_f32);
 	arm_mat_init_f32(&attitudeVector, 3, 1, (float32_t *)attitudeVector_f32);
@@ -174,13 +229,13 @@ pv_msg_io_actuation actuators_signals_step(arm_matrix_instance_f32 tau, float32_
 				pow((-tauData[1] / H + tauData[2] / L), 2)
 				+ pow((Fzb + tauData[0] / L), 2));
 
-	actuation.servoRight = atan(
+	actuation.servoRight = atan2(
 				(tauData[1] / H + tauData[2] / L)
-				/ (Fzb - tauData[0] / L));
+				, (Fzb - tauData[0] / L));
 
-	actuation.servoLeft = atan(
+	actuation.servoLeft = atan2(
 				(tauData[1] / H - tauData[2] / L)
-				/ (Fzb + tauData[0] / L));
+				, (Fzb + tauData[0] / L));
 
 	// Declares that the servos will use angle control, rather than torque control
 	actuation.servoTorqueControlEnable = 0;

@@ -124,7 +124,7 @@ void c_common_utils_enSysTick() {
  */
 long c_common_utils_millis() {
 	CORE_SysTickEn();
-	return CORE_GetSysTick()/(SystemCoreClock/1000);
+	return (long)(CORE_GetSysTick()/(SystemCoreClock/1000));
 }
 
 /**

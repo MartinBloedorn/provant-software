@@ -65,12 +65,26 @@ bool lastTimeoutExpired  = 0;
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+
+/** \brief Funcao para timeout da i2c1
+ *
+ * @param cond        Retorno booleano 
+ * @param startime    Tempo de inicio 
+ *
+ * @retval retorna o booleano da funcao caso esteja dentro do timeoout, caso contrario retorna 0
+ * @todo existe alguns problemas onde nunca si dessa funcao , resolver
+ */
+
 bool while_timeout(bool cond, long startime) {
-	if(c_common_utils_millis() - startime > TIMEOUT_MS)
-		{ lastTimeoutExpired = 1; return 0; }
-	else
-		{ lastTimeoutExpired = 0; return cond; }
+  long unsigned int time_diff1 = c_common_utils_millis();
+  long unsigned int time_diff = time_diff1 - startime ;
+  if(time_diff > TIMEOUT_MS)
+    { lastTimeoutExpired = 1; return 0; }
+  else
+    { lastTimeoutExpired = 0; return cond; }
 }
+
+
 
 /* Exported functions definitions --------------------------------------------*/
 
@@ -99,7 +113,7 @@ void c_common_i2c_init(I2C_TypeDef* I2Cx){
          * 2. SCL on PB8 and SDA on PB9 <-----------
          */
         GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
-        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;   // GPIO Alternate function Mode 
         GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStruct.GPIO_OType = GPIO_OType_OD; // set output to open drain --> the line has to be only pulled low, not driven high
         GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;   // enable pull up resistors
@@ -113,13 +127,14 @@ void c_common_i2c_init(I2C_TypeDef* I2Cx){
         I2C_InitStruct.I2C_ClockSpeed = 100000; // 100kHz
         I2C_InitStruct.I2C_Mode = I2C_Mode_I2C; // I2C mode
         I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2; // 50% duty cycle --> standard
-        I2C_InitStruct.I2C_OwnAddress1 = 0x00;      // own address, not relevant in master mode
+        I2C_InitStruct.I2C_OwnAddress1 = 0x00;         // own address, not relevant in master mode
         I2C_InitStruct.I2C_Ack = I2C_Ack_Disable;     // disable acknowledge when reading (can be changed later on)
         I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // set address length to 7 bit addresses
         I2C_Init(I2C1, &I2C_InitStruct);      // init I2C1
 
         // enable I2C1
         I2C_Cmd(I2C1, ENABLE);
+
   }
   else
   if(I2Cx==I2C2)

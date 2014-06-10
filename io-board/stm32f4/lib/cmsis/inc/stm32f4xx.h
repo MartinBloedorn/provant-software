@@ -47,6 +47,15 @@
 #ifndef __STM32F4xx_H
 #define __STM32F4xx_H
 
+#ifndef STM32F4_H407
+  #ifndef STM32F4_DISCOVERY
+
+    #define STM32F4_H407
+    //#define STM32F4_DISCOVERY
+
+  #endif
+#endif
+
 #ifdef __cplusplus
  extern "C" {
 #endif /* __cplusplus */
@@ -88,9 +97,15 @@
         can define the HSE value in your toolchain compiler preprocessor.
   */           
 
-#if !defined  (HSE_VALUE) 
-  #define HSE_VALUE    ((uint32_t)12000000) /*!< Value of the External oscillator in Hz */
-#endif /* HSE_VALUE */
+#ifdef STM32F4_DISCOVERY
+   #undef HSE_VALUE
+   #define HSE_VALUE    ((uint32_t)8000000)
+#endif
+
+#ifdef STM32F4_H407
+   #undef HSE_VALUE
+   #define HSE_VALUE    ((uint32_t)12000000)
+#endif
 
 /**
  * @brief In the following line adjust the External High Speed oscillator (HSE) Startup 

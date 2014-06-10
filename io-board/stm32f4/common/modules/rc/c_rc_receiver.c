@@ -39,6 +39,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 long int 	channels[12];
+long int 	last_channels[12];
 int 		channel_index = 0;
 long int   channel_center[4]; /** Largura média do pulso em repouso, apenas para canais R-P-Y. */
 
@@ -138,12 +139,28 @@ void c_rc_receiver_init() {
   * @param  int Canal a ser lido (começando em 0)
   * @retval int Duração em \em us do pulso no canal selecionado.
   */
-int  c_rc_receiver_getChannel(int channel_n) {
+float  c_rc_receiver_getChannel(int channel_n) {
 	if(channel_n < NUM_OF_CHANNELS && channels[channel_n] > RECV_MINIMUM && channels[channel_n] < RECV_MAXIMUM) {
+
+  /** Maximos e minimos de cada canal
+    * temosque encontrar os zeros do mag
+
+        C_RC_CHANNEL_THROTTLE   |    C_RC_CHANNEL_ROLL    |    C_RC_CHANNEL_YAW   |   C_RC_CHANNEL_PITCH
+    ----------------------------|-------------------------|-----------------------|----------------------
+            706/1581            |        713/1542         |        692/1523       |       687/1513
+    *****************************************************************************************************/
+        if(channel_n==C_RC_CHANNEL_THROTTLE)
+            last_channels[channel_n] = channels[channel_n] = c_common_utils_map(channels[channel_n], 706, 1581, -100, +100);
+       	if(channel_n==C_RC_CHANNEL_ROLL)
+            last_channels[channel_n] = channels[channel_n] = c_common_utils_map(channels[channel_n], 713, 1542, -100, +100);
+        if(channel_n==C_RC_CHANNEL_YAW)
+            last_channels[channel_n] = channels[channel_n] = c_common_utils_map(channels[channel_n], 692, 1523, -100, +100);
+        if(channel_n==C_RC_CHANNEL_PITCH)
+            last_channels[channel_n] = channels[channel_n] = c_common_utils_map(channels[channel_n], 687, 1513, -100, +100);
 		return channels[channel_n];
 	}
 	else
-		return -1;
+		return last_channels[channel_n];
 }
 
 /** \brief Retorna a largura do pulso em \em us do canal selecionado, em relação ao centro do canal.

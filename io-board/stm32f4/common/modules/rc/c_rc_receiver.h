@@ -34,7 +34,7 @@
 
 void c_rc_receiver_init();
 void c_rc_calibrateCenters();
-int  c_rc_receiver_getChannel(int channel_n);
+float  c_rc_receiver_getChannel(int channel_n);
 int  c_rc_receiver_getCenteredChannel(int channel_n);
 
 #ifdef __cplusplus

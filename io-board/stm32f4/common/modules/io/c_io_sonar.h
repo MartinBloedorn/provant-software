@@ -25,14 +25,15 @@
  extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
+/* Definitions----------------------------------------------------------------*/
+#define SERIAL 0 //change serial or analog read
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
 void c_io_sonar_init();
-int  c_io_sonar_read();
+float  c_io_sonar_read();
 
 #ifdef __cplusplus
 }

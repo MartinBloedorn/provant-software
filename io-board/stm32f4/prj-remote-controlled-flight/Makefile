@@ -107,7 +107,7 @@ CFlAGS += -DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRE
 # verbose flags, all may be commented out
 CFLAGS += -Wunused-value -Wunused-variable -Wunused-but-set-variable #-ftime-report
 # cpp related flags
-CFLAGS += -Os -ffunction-sections -fdata-sections -fno-exceptions --specs=nano.specs -Wl,--gc-sections 
+CFLAGS += -Og -O0 -ffunction-sections -fdata-sections -fno-exceptions --specs=nano.specs -Wl,--gc-sections 
 CFLAGS += -std=c99 
 
 ###################################################
