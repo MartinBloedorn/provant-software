@@ -5,6 +5,10 @@
   * @version V1.0.0
   * @date    02-Dezember-2013
   * @brief   Implementação do módulo de gerenciamento de sensores e atuadores.
+  *
+  * TODO
+  *
+  * \todo	1- Conferir se na descricão de pv_interface_io não deveria trocar RC por IO.
   *****************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -45,6 +49,8 @@
 #include "c_io_sonar.h"
 
 #include "pv_typedefs.h"
+#include "c_datapr_MultWii.h"
+#include "c_datapr_MahonyAHRS.h"
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -56,6 +62,7 @@
 struct pv_interface_io {
 	xQueueHandle oAttitude;		/** Output da Orientação do VANT. Tipo pv_msg_datapr_attitude . **/
 	xQueueHandle oPosition;		/** \todo Implementar output da posição do VANT. **/
+	xQueueHandle oSensorTime;	/** Informacões de tempo relativos aos sensores. Tipo pv_msg_datapr_sensor_time . **/
 	xQueueHandle iActuation;	/** Sinais de atuação para módulo de IO. Tipo pv_msg_io_actuation . **/
 } pv_interface_io;
 

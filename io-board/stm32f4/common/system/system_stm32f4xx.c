@@ -144,6 +144,7 @@
 
 
 #ifdef STM32F4_DISCOVERY
+  //#warning ">>>> STM32F4_DISCOVERY"
   /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
   #define PLL_M      8
   #define PLL_N      336
@@ -153,6 +154,7 @@
 #endif
 
 #ifdef STM32F4_H407
+  //#warning ">>>> STM32F4_H407"
   /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
   #define PLL_M      6
   #define PLL_N      168

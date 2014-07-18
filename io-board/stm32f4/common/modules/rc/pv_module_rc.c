@@ -31,9 +31,11 @@ pv_msg_io_actuation actuation;
 pv_type_receiverChannels receiver;
 portTickType lastWakeTime;
 char str[64];
+GPIOPin LED_builtin_rc;
 
 /* Inboxes buffers */
 pv_msg_datapr_attitude iAttitude;
+pv_msg_datapr_sensor_time iSensorTime;
 
 /* Outboxes buffers*/
 pv_msg_io_actuation    oActuation;
@@ -52,15 +54,17 @@ pv_msg_io_actuation    oActuation;
 void module_rc_init() {
 	/* Inicialização do hardware do módulo */
 	c_rc_receiver_init();
+  LED_builtin_rc = c_common_gpio_init(GPIOB, GPIO_Pin_15, GPIO_Mode_OUT);
 
 	/* Inicialização das filas do módulo. Apenas inboxes (i*!) são criadas! */
 	pv_interface_rc.iAttitude  = xQueueCreate(1, sizeof(pv_msg_datapr_attitude));
+	pv_interface_rc.iSensorTime = xQueueCreate(1, sizeof(pv_msg_datapr_sensor_time));
 
 	/* Inicializando outboxes em 0 */
 	pv_interface_rc.oActuation = 0;
 
 	/* Verificação de criação correta das filas */
-	if(pv_interface_rc.iAttitude == 0) {
+	if(pv_interface_rc.iAttitude == 0 || pv_interface_rc.iSensorTime == 0) {
 		vTraceConsoleMessage("Could not create queue in pv_interface_io!");
 		while(1);
 	}
@@ -78,11 +82,14 @@ void module_rc_init() {
   */
 void module_rc_run() {
   char rc_channel[4][16];
+  int throttle_control;
 
 	while(1) {
 		lastWakeTime = xTaskGetTickCount();
+    c_common_gpio_toggle(LED_builtin_rc);
 
     xQueueReceive(pv_interface_rc.iAttitude, &iAttitude, 0);
+    xQueueReceive(pv_interface_rc.iSensorTime, &iSensorTime, 0);
     
     /// Controle
     #if 1
@@ -92,8 +99,21 @@ void module_rc_run() {
       pv_msg_datapr_position position  = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
       pv_msg_datapr_position position_reference = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
 
-      oActuation = RC_controller(iAttitude,attitude_reference,position,position_reference);
-      oActuation.servoRight = -oActuation.servoRight;
+      // Limita a velocidade dos ESCs a partir do RC
+      //throttle_control = c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
+//      if (throttle_control < 0)
+    	  throttle_control = -throttle_control;
+
+      oActuation = RC_controller(iAttitude,attitude_reference,position,position_reference,iSensorTime,throttle_control);
+
+      // Ajusta o eixo de referencia do servo (montado ao contrario)
+      oActuation.servoLeft = -oActuation.servoLeft;
+
+      // Modulando sinal do ESC para testes
+//      oActuation.escLeftSpeed  = (oActuation.escLeftSpeed*throttle_control)/100;
+//      oActuation.escRightSpeed = (oActuation.escRightSpeed*throttle_control)/100;
+      //oActuation.escLeftSpeed  = throttle_control;
+
     #endif
     
     /// Receiver debug
@@ -110,8 +130,8 @@ void module_rc_run() {
 
     #if 0
       taskENTER_CRITICAL();
-      oActuation.servoRight=c_rc_receiver_getChannel(C_RC_CHANNEL_YAW);
-      oActuation.servoLeft =c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
+      oActuation.servoRight = c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
+      oActuation.servoLeft = 0;
       taskEXIT_CRITICAL();
     #endif
 

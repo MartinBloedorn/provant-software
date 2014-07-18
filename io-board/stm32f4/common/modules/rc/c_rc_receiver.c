@@ -199,7 +199,18 @@ int  c_rc_receiver_getCenteredChannel(int channel_n) {
 	}
 }
 
+float32_t c_rc_receiver_getNormalizedChannel(int channel_n){
+	float32_t normalized_channel;
+	int teste;
 
+	teste = c_rc_receiver_getChannel(channel_n);
+	normalized_channel = teste / 567.228;
+//	normalized_channel = c_rc_receiver_getChannel(channel_n)/567.228;
+	if (channel_n == C_RC_CHANNEL_PITCH)
+		normalized_channel = -normalized_channel;
+
+	return normalized_channel;
+}
 
 /* IRQ handlers ------------------------------------------------------------- */
 

@@ -23,6 +23,7 @@
 #include "task.h"
 
 /* proVANT includes */
+#include "c_common_gpio.h"
 #include "c_rc_control.h"
 #include "c_rc_receiver.h"
 
@@ -37,6 +38,7 @@
    */
 struct pv_interface_rc {
 	xQueueHandle oActuation;	/** Sinais de atuação para módulo de IO. **/
+	xQueueHandle iSensorTime;	/** Sinais de atuação para módulo de IO. **/
 	xQueueHandle iAttitude;		/** Feedback da orientação do VANT. **/
 } pv_interface_rc;
 

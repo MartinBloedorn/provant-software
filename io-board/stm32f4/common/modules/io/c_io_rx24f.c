@@ -123,10 +123,26 @@
 #define TIME_OUT                    10
 #define TX_DELAY_TIME		    	      400
 
-#define PIN_CONTROL_PORT		 	 GPIOG
-#define PIN_CONTROL				 	 GPIO_Pin_12
-#define RXUSART						 USART3
+#ifdef  STM32F4_H407
+  #define PIN_CONTROL_PORT		 	 GPIOG
+#endif
+#ifdef STM32F4_DISCOVERY
+  #define PIN_CONTROL_PORT       GPIOD
+#endif    
 
+#ifdef  STM32F4_H407
+  #define PIN_CONTROL          GPIO_Pin_12
+#endif
+#ifdef STM32F4_DISCOVERY
+  #define PIN_CONTROL          GPIO_Pin_3
+#endif    
+
+
+#if STM32F4_H407
+  #define RXUSART						  USART3
+#elif STM32F4_DISCOVERY
+  #define RXUSART             USART1 
+#endif
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 GPIOPin controlPin;
@@ -155,8 +171,13 @@ int prv_read_error(int error_byte)
   * @param  baudrate Baudrate configurada nos servos.
   * @retval None
   */
-void c_io_rx24f_init(int baudrate) {
-	c_common_usart3_init(baudrate);
+void c_io_rx24f_init(int baudrate)
+{
+  #if   STM32F4_H407
+	  c_common_usart3_init(baudrate);
+  #elif STM32F4_DISCOVERY
+    c_common_usart1_init(baudrate);
+  #endif
 	c_common_usart_it_set(RXUSART, USART_IT_RXNE, ENABLE);
 	controlPin = c_common_gpio_init(PIN_CONTROL_PORT, PIN_CONTROL, GPIO_Mode_OUT);
 }

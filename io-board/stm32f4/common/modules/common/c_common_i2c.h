@@ -18,6 +18,11 @@
 
 #include "c_common_utils.h"
 
+/* FreeRTOS kernel includes */
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "task.h"
+
 #ifdef __cplusplus
  extern "C" {
 #endif

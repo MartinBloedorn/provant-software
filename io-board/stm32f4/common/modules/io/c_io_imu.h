@@ -16,10 +16,16 @@
 
 #include "c_common_i2c.h"
 #include "c_common_utils.h"
+#include "c_common_gpio.h"
 
 #define ARM_MATH_CM4
 #include "arm_math.h"
 #include <math.h>
+
+/* FreeRTOS kernel includes */
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "task.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -69,10 +75,12 @@
 /* Exported functions ------------------------------------------------------- */
 void c_io_imu_init(I2C_TypeDef* I2Cx);
 void c_io_imu_getRaw(float  * accRaw, float * gyrRaw, float * magRaw);
-void c_io_imu_getComplimentaryRPY(float * acce_raw, float * gyro_raw, float * magn_raw, float * rpy);
+void c_io_imu_getComplimentaryRPY(float * acce_raw, float * gyro_raw, float * magn_raw, float sample_time, float * rpy);
 void c_io_imu_getKalmanFilterRPY(float * rpy, float * acce_raw, float * gyro_raw, float * magn_raw);
 void c_io_imu_initKalmanFilter();
 void c_io_imu_calibrate();
+void c_io_imu_Quaternion2Euler(float * q, float * rpy);
+void c_io_imu_EulerMatrix(float * rpy, float * velAngular);
 
 #ifdef __cplusplus
 }

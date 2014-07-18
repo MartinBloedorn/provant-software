@@ -20,6 +20,9 @@ TOOLCHAIN_PREFIX = arm-none-eabi-
 THUMB = -mthumb
 MCU   = cortex-m4
 
+#BOARD =-DSTM32F4_H407
+BOARD =-DSTM32F4_DISCOVERY
+
 # path, root and common dir
 PRJDIR := $(shell pwd)
 PATH   := ${PATH}:$(PRJDIR)
@@ -35,6 +38,7 @@ LIBDIR       := $(PRJDIR)/../lib
 MODULES	      = $(MODDIR)/common
 MODULES	     += $(MODDIR)/rc
 MODULES	     += $(MODDIR)/io
+MODULES      += $(MODDIR)/datapr
 
 # CMSIS Device Drivers directory
 CMSISDIR     := $(LIBDIR)/cmsis
@@ -99,16 +103,19 @@ OBJDUMP = $(TOOLCHAIN_PREFIX)objdump
 NM      = $(TOOLCHAIN_PREFIX)nm
 
 # compiler flags
-CFLAGS  = -g -Wall -T$(COMMON)/system/stm32_flash.ld 
+CFLAGS  = -g -T$(COMMON)/system/stm32_flash.ld 
 CFLAGS += -mlittle-endian -mthumb -mcpu=$(MCU) -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += -I. $(patsubst %,-I%,$(INCDIRS))
-CFlAGS += -DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT="1"  
+CFlAGS += -DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING
 # verbose flags, all may be commented out
-CFLAGS += -Wunused-value -Wunused-variable -Wunused-but-set-variable #-ftime-report
+#CFLAGS += -Wall  -Wunused-value -Wunused-variable -Wunused-but-set-variable #-ftime-report
 # cpp related flags
 CFLAGS += -Og -O0 -ffunction-sections -fdata-sections -fno-exceptions --specs=nano.specs -Wl,--gc-sections 
 CFLAGS += -std=c99 
+CFLAGS += $(BOARD)
+CFLAGS +=-D__FPU_PRESENT
+
 
 ###################################################
 

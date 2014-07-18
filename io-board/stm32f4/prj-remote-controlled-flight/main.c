@@ -1,16 +1,20 @@
 /**
   ******************************************************************************
   * @file    main/main.c
-  * @author  Martin Vincent Bloedorn
+  * @author  Martin Vincent Bloedorn & Patrick José Pereira
   * @version V1.0.0
   * @date    30-November-2013
   * @brief   Startup do projeto.
-  *
+  * @warning Modificar os arquivos 
+    provant-software/io-board/stm32f4/common/modules/common/stm32f4xx_conf.h
+    provant-software/io-board/stm32f4/lib/cmsis/inc/stm32f4xx.h
+    provant-software/io-board/stm32f4/lib/cmsis/inc/stm32f4xx_conf.h
+    dependendo da placa que esta trabalhando.
+    Recompilando com:
+    make allclean
+    make
   *	TODO
   *
-  * \todo	 1 - Terminar gpio_common.
-  * \todo	 2 - Implementar comunicação com servos.
-  * \todo	 3 - Implementar comunicação com ESCs.
   *****************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
@@ -53,11 +57,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 GPIOPin LED_builtin;
-GPIOPin LED_Green;
-GPIOPin LED_Yellow;
+GPIOPin LED_builtin2;
 
 /* Private define ------------------------------------------------------------*/
-#define STM32F4_DISCOVERY
+#ifdef STM32F4_H407
+  bool BOARD_DISCOVERY=0;
+  bool BOARD_H407=1;
+#endif
+  
+#ifdef STM32F4_DISCOVERY
+  bool BOARD_DISCOVERY=1;
+  bool BOARD_H407=0;
+#endif
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -84,12 +95,20 @@ void FPU_init(){
 // `I'm alive` kind of task
 void blink_led_task(void *pvParameters)
 {
-	LED_builtin = c_common_gpio_init(GPIOC, GPIO_Pin_13, GPIO_Mode_OUT);
-
+  if(BOARD_H407)
+    LED_builtin = c_common_gpio_init(GPIOC, GPIO_Pin_13, GPIO_Mode_OUT);
+  else
+  {
+    LED_builtin = c_common_gpio_init(GPIOA, GPIO_Pin_7, GPIO_Mode_OUT);
+    LED_builtin2 = c_common_gpio_init(GPIOB, GPIO_Pin_1, GPIO_Mode_OUT);
+    c_common_gpio_toggle(LED_builtin2);
+  }
     while(1)
     {
-        c_common_gpio_toggle(LED_builtin);
-        vTaskDelay(100/portTICK_RATE_MS);
+      if(BOARD_DISCOVERY)
+        c_common_gpio_toggle(LED_builtin2);
+      c_common_gpio_toggle(LED_builtin);
+      vTaskDelay(100/portTICK_RATE_MS);
     }
 }
 
@@ -112,7 +131,7 @@ void sonar_task(void *pvParameters)
   while(1)
   {
     char str[64];
-    sprintf(str, "Distance: %d \n\r", c_io_sonar_read());
+    sprintf(str, "Distance: %f \n\r", c_io_sonar_read());
     c_common_usart_puts(USART2, str);
     vTaskDelay(300/portTICK_RATE_MS);
   }
@@ -137,27 +156,16 @@ int main(void)
 	/* Connect modules: interface1.o* = interface2.i* */
 	pv_interface_io.oAttitude  = pv_interface_rc.iAttitude;
 	pv_interface_rc.oActuation = pv_interface_io.iActuation;
+	pv_interface_io.oSensorTime = pv_interface_rc.iSensorTime;
 
 	c_common_usart_puts(USART2, "Iniciando!\n\r");
 
-
-	LED_Green  =  c_common_gpio_init(GPIOA, GPIO_Pin_7, GPIO_Mode_OUT);	
-	LED_Yellow =  c_common_gpio_init(GPIOB, GPIO_Pin_1, GPIO_Mode_OUT);	
-
-	/*----------------------------*/
-	c_common_gpio_set(LED_Yellow);
-
-	while(1) {
-		c_common_gpio_toggle(LED_Yellow);
-		c_common_gpio_toggle(LED_Green);
-		c_common_utils_delayms(500);
-	}
-	/*----------------------------*/
-
-	/* create tasks */
-	//xTaskCreate(blink_led_task, (signed char *)"Blink led", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
-	//xTaskCreate(module_rc_task, (signed char *)"module_rc", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
-	//xTaskCreate(module_io_task, (signed char *)"module_io", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	/* create tasks
+	 * Prioridades - quanto maior o valor, maior a prioridade
+	 * */
+	xTaskCreate(blink_led_task, (signed char *)"Blink led", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	xTaskCreate(module_rc_task, (signed char *)"module_rc", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
+	xTaskCreate(module_io_task, (signed char *)"module_io", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+3, NULL);
 
 	//xTaskCreate(sonar_task, (signed char *)"Sonar task", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
 

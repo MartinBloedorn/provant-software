@@ -74,6 +74,12 @@ typedef struct {
 	float dotX, dotY, dotZ;
 } pv_msg_datapr_position;
 
+/** \brief Estrutura para informacões relativos a tempo dos sensores*/
+typedef struct {
+	float IMU_sample_time; //tempo entre uma aquisicão de dado e outra. Utilizado para integracão. Valor variável.
+} pv_msg_datapr_sensor_time;
+
+
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

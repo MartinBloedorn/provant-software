@@ -14,7 +14,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_conf.h"
-
+#include "FreeRTOS.h"
 #define ARM_MATH_CM4
 #include "arm_math.h"
 #include <math.h>
@@ -51,6 +51,7 @@ void c_common_utils_delayus(long us);
 
 void c_common_utils_enSysTick();
 long c_common_utils_getSysTickCount();
+//long c_common_utils_micros();
 long c_common_utils_millis();
 
 /* Manipulações de strings */
