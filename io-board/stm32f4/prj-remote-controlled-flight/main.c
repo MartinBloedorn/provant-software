@@ -53,8 +53,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 GPIOPin LED_builtin;
+GPIOPin LED_Green;
+GPIOPin LED_Yellow;
 
 /* Private define ------------------------------------------------------------*/
+#define STM32F4_DISCOVERY
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -137,15 +140,29 @@ int main(void)
 
 	c_common_usart_puts(USART2, "Iniciando!\n\r");
 
+
+	LED_Green  =  c_common_gpio_init(GPIOA, GPIO_Pin_7, GPIO_Mode_OUT);	
+	LED_Yellow =  c_common_gpio_init(GPIOB, GPIO_Pin_1, GPIO_Mode_OUT);	
+
+	/*----------------------------*/
+	c_common_gpio_set(LED_Yellow);
+
+	while(1) {
+		c_common_gpio_toggle(LED_Yellow);
+		c_common_gpio_toggle(LED_Green);
+		c_common_utils_delayms(500);
+	}
+	/*----------------------------*/
+
 	/* create tasks */
-	xTaskCreate(blink_led_task, (signed char *)"Blink led", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(module_rc_task, (signed char *)"module_rc", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(module_io_task, (signed char *)"module_io", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	//xTaskCreate(blink_led_task, (signed char *)"Blink led", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	//xTaskCreate(module_rc_task, (signed char *)"module_rc", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	//xTaskCreate(module_io_task, (signed char *)"module_io", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
 
 	//xTaskCreate(sonar_task, (signed char *)"Sonar task", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
 
 	/* Start the scheduler. */
-	vTaskStartScheduler();
+	//vTaskStartScheduler();
 
 	/* should never reach here! */
 	for(;;);
