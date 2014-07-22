@@ -13,3 +13,6 @@
 # Ignore eclipse project files
 .cproject
 .project
+
+# Ignore some stupid MacOS default files
+.DS_Store
