@@ -25,7 +25,11 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 #define SONAR_BAUDRATE  9600
-#define SONAR_USART     USART6
+#ifdef STM32F4_H407
+  #define SONAR_USART     USART6
+#else
+  #define SONAR_USART     USART3
+#endif
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions definitions --------------------------------------------*/
@@ -86,7 +90,11 @@ int adc_convert()
 void c_io_sonar_init()
 {
   #if SERIAL
-    c_common_usart6_init(9600); //change this command if SONAR_USART change
+    #ifdef STM32F4_H407
+      c_common_usart6_init(9600); //change this command if SONAR_USART change
+    #else
+      c_common_usart3_init(9600); //change this command if SONAR_USART change
+    #endif
   #else
     adc_configure();
   #endif
@@ -101,10 +109,10 @@ float  c_io_sonar_read()
 {
   #if SERIAL
     char dist[3];
-    while(c_common_usart_read(USART6)!='R'){}
-    dist[0]=c_common_usart_read(USART6);
-    dist[1]=c_common_usart_read(USART6);
-    dist[2]=c_common_usart_read(USART6);
+    while(c_common_usart_read(SONAR_USART)!='R'){}
+    dist[0]=c_common_usart_read(SONAR_USART);
+    dist[1]=c_common_usart_read(SONAR_USART);
+    dist[2]=c_common_usart_read(SONAR_USART);
     return (float)atoi(dist);
   #else
     return (float)adc_convert();

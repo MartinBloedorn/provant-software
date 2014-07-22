@@ -26,7 +26,7 @@
 #endif
 
 /* Definitions----------------------------------------------------------------*/
-#define SERIAL 0 //change serial or analog read
+#define SERIAL 1 //change serial or analog read
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
