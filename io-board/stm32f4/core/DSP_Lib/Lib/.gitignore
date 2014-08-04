@@ -1,0 +1,6 @@
+# ignore almost everything...
+*.lib
+*.a
+
+# except for the right library!
+!GCC/libarm_cortexM4lf_math.a
