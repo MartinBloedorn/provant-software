@@ -15,7 +15,7 @@ aeromodelismo. Para tal, são necessárias/previstas o seguinte conjunto de fina
 
 \section page_main_sec_changelog Changelog
 
-<b>Changelog da versão 0.3  [Apr-2013] :</b> 
+<>Changelog da versão 0.3  [Apr-2013] :</b> 
 + ...
 + ...
 
@@ -208,7 +208,6 @@ Por fim, a utilização de pinos da MCU deve ser definida no arquivo `pv_pinmapp
  
  
 */
-
 
 
 

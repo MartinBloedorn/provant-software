@@ -22,6 +22,7 @@
 /* Std includes */
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>  
 #include "inttypes.h"
 
 /* Hardware includes. */
